@@ -4,3 +4,4 @@ openai
 torch
 fastapi
 pydantic
+openai-whisper
