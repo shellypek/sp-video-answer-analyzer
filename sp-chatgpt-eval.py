@@ -14,29 +14,41 @@ def Speech2Text(file):
   answer = result["text"]
   return answer
 
-import requests
-
 def download_video(url, filename):
-  response = requests.get(url, stream=True)
-  if response.status_code == 200:
-    with open(filename, 'wb') as f:
-      for chunk in response.iter_content(1024):
-        f.write(chunk)
-    return True
-  else:
-    print(f"Error downloading video: {response.status_code}")
-    return False
+    logging.info(f"Downloading video from {url} to {filename}")
+
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()  # Raise an exception for non-200 status codes
+
+        total_size = int(response.headers.get('Content-Length', 0))
+        downloaded = 0
+
+        with open(filename, 'wb') as f:
+            for chunk in response.iter_content(1024):
+                downloaded += len(chunk)
+                f.write(chunk)
+                if total_size > 0:
+                    print(f"Downloaded {downloaded}/{total_size} bytes ({downloaded/total_size:.2%})")
+
+        return True
+
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error downloading video: {e}")
+        return False
 
 def ChatGPTEval(question, answer):
     message = [
     {
         "role": "user",
         "content": f"""Rate the candidate's answer as an integer from 0 to 100, where 0 is the worst and 100 is the best and give a little bit explanation. Also, provide type of the question: technical, behavioural, or motivation. 
-        Here's the question: "{question}" and here's the answer: "{answer}".  
-        Please give your answer in the following format: 
+        If it's behavioral and motivational question, could you please give emotions class for the answer from the following emotion classes: neutral, calm, happy, sad, angry, fearful, disgust, surprised.
+        Here's the question: "{question}" and here's the answer: "{answer}".
+        Please give your answer in the following format:
         Answer score:
         Score explanation:
-        Question type: 
+        Question type:
+        Emotion:
         """
     }
     ]
@@ -45,20 +57,22 @@ def ChatGPTEval(question, answer):
     messages=message,
     model="gpt-3.5-turbo",
     )
-
-    # Assuming you have chat_completion.choices[0].message.content available
+    
     content = chat_completion.choices[0].message.content
 
-    # Extracting answer score
-    answer_score_index = content.find("Answer score:") + len("Answer score:")
-    score_explanation_index = content.find("Score explanation:")
-    question_type_index = content.find("Question type:")
+    # Define regular expressions for each field
+    score_regex = r"Answer score:\s*(.*?)(?=\s*Score explanation)"
+    explanation_regex = r"Score explanation:\s*(.*?)(?=\s*Question type)"
+    type_regex = r"Question type:\s*(.*?)(?=\s*Emotion)"
+    emotion_regex = r"Emotion:\s*(.*)"
 
-    answer_score = content[answer_score_index:score_explanation_index].strip()
-    score_explanation = content[score_explanation_index:question_type_index].strip()
-    question_type = content[question_type_index:].strip()
+    # Extract information using regex matches
+    answer_score = re.search(score_regex, content).group(1).strip()
+    score_explanation = re.search(explanation_regex, content).group(1).strip()
+    question_type = re.search(type_regex, content).group(1).strip()
+    emotion = re.search(emotion_regex, content).group(1).strip()
 
-    return answer_score, score_explanation, question_type
+    return answer_score, score_explanation, question_type, emotion
 
 app = FastAPI()
 
@@ -78,7 +92,7 @@ class Question(BaseModel):
     video_link: str
     question_type: str
     emotion_results: list[EmotionResult]
-  
+
 class Result(BaseModel):
     questions: list[Question]
     score: int
@@ -89,20 +103,25 @@ class InterviewResults(BaseModel):
     rawResult: bytes
 
 @app.post("/process_interview")
-def process_interview(interview: InterviewResults):
-  public_id = interview.public_id
-  result = interview.result
+def process_interview(interview: InterviewResults, download_service, speech_service):
+    public_id = interview.public_id
+    result = interview.result
 
-  for question in result.questions:
-    filename = f"interview_{public_id}_{question.questionNumber}.mp4"  # Example filename
-    if download_video(question.video_link, filename):
-      answer = Speech2Text(filename)
-      os.remove(filename)  # Clean up downloaded video
-    else:
-      answer = "Error downloading video"
-    answer_score, score_explanation, question_type = ChatGPTEval(question.question, answer)
-    question.evaluation = score_explanation
-    question.score = int(answer_score)
-    question.question_type = question_type
+    for question in result.questions:
+        filename = f"interview_{public_id}_{question.questionNumber}.mp4"
+        if download_video(question.video_link, filename, download_service):
+            try:
+                answer = Speech2Text(filename, speech_service)
+                os.remove(filename) 
+            except Exception as e:
+                answer = f"Error processing video: {e}"
+        else:
+            answer = "Error downloading video"
 
-  return {"result": result}
+        answer_score, score_explanation, question_type, emotion = ChatGPTEval(question.question, answer)
+        question.evaluation = score_explanation
+        question.score = int(answer_score)
+        question.question_type = question_type
+        question.emotion = emotion
+
+    return {"result": result}
