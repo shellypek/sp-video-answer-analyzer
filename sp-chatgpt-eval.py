@@ -125,3 +125,6 @@ def process_interview(interview: InterviewResults):
         question.emotion = emotion
 
     return {"result": result}
+
+if name == "main":
+    uvicorn.run(app, host="localhost", port=9003)
