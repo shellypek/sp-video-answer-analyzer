@@ -1,6 +1,6 @@
-torchaudio
-whisper
-openai
-torch
-fastapi
-pydantic
+import torchaudio
+import whisper
+import openai
+import torch
+import fastapi
+import pydantic
