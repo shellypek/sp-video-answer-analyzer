@@ -1,6 +1,6 @@
 import torchaudio
 import whisper
-import openai
+from openai import OpenAI
 import torch
 import fastapi
 import pydantic
