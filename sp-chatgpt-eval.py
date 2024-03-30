@@ -2,7 +2,7 @@ from imports_files import *
 
 client = OpenAI(
     # This is the default and can be omitted
-    api_key= os.environ.get('API_Key'),
+    api_key= os.environ.get('API_KEY'),
 )
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
