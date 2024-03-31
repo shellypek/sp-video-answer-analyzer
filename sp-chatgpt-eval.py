@@ -103,7 +103,7 @@ class InterviewResults(BaseModel):
     rawResult: bytes
 
 @app.post("/process_interview")
-def process_interview(interview: InterviewResults):
+async def process_interview(interview: InterviewResults):
     public_id = interview.public_id
     result = interview.result
 
@@ -127,4 +127,4 @@ def process_interview(interview: InterviewResults):
     return {"result": result}
 
 if __name__ == "main":
-    uvicorn.run(app, host="localhost", port=9003)
+    uvicorn.run(app, host="localhost", port=9004)
