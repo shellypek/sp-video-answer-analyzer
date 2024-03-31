@@ -111,7 +111,7 @@ def process_interview(interview: InterviewResults):
         filename = f"interview_{public_id}_{question.questionNumber}.mp4"
         if download_video(question.video_link, filename):
             try:
-                answer = Speech2Text(filename, speech_service)
+                answer = Speech2Text(filename)
                 os.remove(filename) 
             except Exception as e:
                 answer = f"Error processing video: {e}"
@@ -126,5 +126,5 @@ def process_interview(interview: InterviewResults):
 
     return {"result": result}
 
-if name == "main":
+if __name__ == "main":
     uvicorn.run(app, host="localhost", port=9003)
