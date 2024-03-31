@@ -108,7 +108,7 @@ def process_interview(interview: InterviewResults):
     result = interview.result
 
     for question in result.questions:
-        filename = f"interview_{public_id}_{question.questionNumber}.mp4"
+        filename = f"interview_{public_id}.mp4"
         if download_video(question.video_link, filename):
             try:
                 answer = Speech2Text(filename)
