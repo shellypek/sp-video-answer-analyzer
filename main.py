@@ -98,33 +98,49 @@ class Result(BaseModel):
     score: int
 
 class InterviewResults(BaseModel):
-    public_id: str
     result: Result
     rawResult: bytes
 
-@app.post("/process_interview")
-async def process_interview(interview: InterviewResults):
-    public_id = interview.public_id
-    result = interview.result
+class QuestionReq(BaseModel):
+    question: str
+    public_id: str
+    video_link: str
 
-    for question in result.questions:
-        filename = f"interview_{public_id}.mp4"
+class Request(BaseModel):
+    questions: list[Question]
+    
+
+@app.post("/process_interview")
+async def process_interview(interview: Request):
+    
+    interview_results = InterviewResults()
+    result = Result(questions=[], score=0)
+    
+    for question in interview.questions:
+        filename = f"interview_{question.public_id}.mp4"
+        
         if download_video(question.video_link, filename):
             try:
                 answer = Speech2Text(filename)
-                os.remove(filename) 
+                os.remove(filename)
             except Exception as e:
                 answer = f"Error processing video: {e}"
         else:
             answer = "Error downloading video"
-
+        
         answer_score, score_explanation, question_type, emotion = ChatGPTEval(question.question, answer)
-        question.evaluation = score_explanation
-        question.score = int(answer_score)
-        question.question_type = question_type
-        question.emotion = emotion
 
-    return {"result": result}
 
-if __name__ == "main":
-    uvicorn.run(app, host="localhost", port=9004)
+        question_obj = Question(
+            score=int(answer_score),
+            video_link=question.video_link,
+            question_type=question_type,
+        )
+        
+        result.questions.append(question_obj)
+        result.score += int(answer_score)
+    
+    interview_results.result = result
+        
+    return {"result": interview_results}
+
