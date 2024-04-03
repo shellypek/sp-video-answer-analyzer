@@ -1,8 +1,9 @@
 from imports_files import *
 
+
 client = OpenAI(
     # This is the default and can be omitted
-    api_key= os.environ.get('API_KEY'),
+    api_key=os.environ.get('API_KEY'),
 )
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -10,9 +11,9 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 model = whisper.load_model("base", device=device)
 
 def Speech2Text(file):
-  result = model.transcribe(file)
-  answer = result["text"]
-  return answer
+    result = model.transcribe(file)
+    answer = result["text"]
+    return answer
 
 def download_video(url, filename):
     logging.info(f"Downloading video from {url} to {filename}")
@@ -39,25 +40,25 @@ def download_video(url, filename):
 
 def ChatGPTEval(question, answer):
     message = [
-    {
-        "role": "user",
-        "content": f"""Rate the candidate's answer as an integer from 0 to 100, where 0 is the worst and 100 is the best and give a little bit explanation. Also, provide type of the question: technical, behavioural, or motivation. 
-        If it's behavioral and motivational question, could you please give emotions class for the answer from the following emotion classes: neutral, calm, happy, sad, angry, fearful, disgust, surprised.
-        Here's the question: "{question}" and here's the answer: "{answer}".
-        Please give your answer in the following format:
-        Answer score:
-        Score explanation:
-        Question type:
-        Emotion:
-        """
-    }
+        {
+            "role": "user",
+            "content": f"""Rate the candidate's answer as an integer from 0 to 100, where 0 is the worst and 100 is the best and give a little bit explanation. Also, provide type of the question: technical, behavioral, or motivation. 
+            could you please give emotions class for the answer from the following emotion classes: neutral, calm, happy, sad, angry, fearful, disgust, surprised.
+            Here's the question: "{question}" and here's the answer: "{answer}".
+            Please give your answer in the following format:
+            Answer score:
+            Score explanation:
+            Question type:
+            Emotion:
+            """
+        }
     ]
 
     chat_completion = client.chat.completions.create(
-    messages=message,
-    model="gpt-3.5-turbo",
+        messages=message,
+        model="gpt-3.5-turbo",
     )
-    
+
     content = chat_completion.choices[0].message.content
 
     # Define regular expressions for each field
@@ -91,6 +92,7 @@ class Question(BaseModel):
     score: int
     video_link: str
     question_type: str
+    emotion: str
     emotion_results: list[EmotionResult]
 
 class Result(BaseModel):
@@ -107,13 +109,13 @@ class QuestionReq(BaseModel):
     video_link: str
 
 class Request(BaseModel):
-    questions: list[Question]
+    questions: list[QuestionReq]
     
 
 @app.post("/process_interview")
 async def process_interview(interview: Request):
-    
-    interview_results = InterviewResults()
+    print(interview)
+    interview_results = InterviewResults(result=Result(questions=[], score=0), rawResult=b"")
     result = Result(questions=[], score=0)
     
     for question in interview.questions:
@@ -132,15 +134,19 @@ async def process_interview(interview: Request):
 
 
         question_obj = Question(
+            question=question.question,
             score=int(answer_score),
             video_link=question.video_link,
             question_type=question_type,
+            evaluation=score_explanation,
+            emotion_results=[],
+            emotion=emotion,
         )
         
         result.questions.append(question_obj)
         result.score += int(answer_score)
-    
+        print(question_obj)
     interview_results.result = result
-        
-    return {"result": interview_results}
+    print(interview_results)
+    return {"result": interview_results.result}
 
