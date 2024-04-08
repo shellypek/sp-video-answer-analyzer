@@ -87,6 +87,7 @@ class EmotionResult(BaseModel):
     duration: float
 
 class Question(BaseModel):
+    public_id: str
     question: str
     evaluation: str
     score: int
@@ -141,6 +142,8 @@ async def process_interview(interview: Request):
             evaluation=score_explanation,
             emotion_results=[],
             emotion=emotion,
+            answer=answer,
+            public_id=question.public_id,
         )
         
         result.questions.append(question_obj)
