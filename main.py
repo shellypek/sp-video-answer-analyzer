@@ -95,6 +95,7 @@ class Question(BaseModel):
     question_type: str
     emotion: str
     emotion_results: list[EmotionResult]
+    answer: str
 
 class Result(BaseModel):
     questions: list[Question]
@@ -131,6 +132,8 @@ async def process_interview(interview: Request):
         else:
             answer = "Error downloading video"
         
+
+        ans = answer
         answer_score, score_explanation, question_type, emotion = ChatGPTEval(question.question, answer)
 
 
@@ -142,10 +145,10 @@ async def process_interview(interview: Request):
             evaluation=score_explanation,
             emotion_results=[],
             emotion=emotion,
-            answer=answer,
+            answer=ans,
             public_id=question.public_id,
         )
-        
+        print("he",ans)
         result.questions.append(question_obj)
         result.score += int(answer_score)
         print(question_obj)
