@@ -4,5 +4,14 @@ openai
 torch
 fastapi
 pydantic
-openai-whisper
+requests
+logging
 uvicorn
+regex
+Pillow 
+scikit-learn
+random
+numpy
+PIL
+librosa
+facenet_pytorch

@@ -1,21 +1,4 @@
-import torch
-from torchvision import transforms
-import torch.utils.data as data
-from PIL import Image
-import functools
-import numpy as np
-import librosa
-from torch import nn
-from models.multimodalcnn import MultiModalCNN
-
-from opts import opts
-from ravdess_preprocessing.process import extract_fa
-
-# from utils import calculate_accuracy
-from transforms import Compose, ToTensor
-from torch.autograd import Variable
-
-
+from imports_files import *
 
 def video_loader(video_dir_path):
     video = np.load(video_dir_path)    
@@ -174,18 +157,25 @@ def prediction(root):
         7: "Surprised"
     }
 
-    timepoints=[]
-    start=0
+    # timepoints=[]
+    # start=0
+    # for i in range(len(ans_list)):
+    #     if i!=0 and ans_list[i-1]!=ans_list[i]:
+    #         timepoints.append({"emotion":switcher.get(ans_list[i-1]),"start":start, "duration":round(float((i*35+1)/30)-start)})
+    #         start=round(float((i*35+1)/30))
+    # timepoints.append({"emotion":switcher.get(ans_list[-1]),"start":start,"duration": round(float(((len(ans_list)-1)*35+1)/30)-start)})
+
+    # print(timepoints)
+    # return timepoints
+    timepoints = []
+    start = 0
     for i in range(len(ans_list)):
-        if i!=0 and ans_list[i-1]!=ans_list[i]:
-            timepoints.append({"emotion":switcher.get(ans_list[i-1]),"start":start, "duration":round(float((i*35+1)/30)-start)})
-            start=round(float((i*35+1)/30))
+        if i != 0 and ans_list[i-1] != ans_list[i]:
+            timepoints.append(EmotionResult(emotion=switcher.get(ans_list[i-1]), exact_time=start, duration=round(float((i*35+1)/30)-start)))
+            start = round(float((i*35+1)/30))
 
-    timepoints.append({"emotion":switcher.get(ans_list[-1]),"start":start,"duration": round(float(((len(ans_list)-1)*35+1)/30)-start)})
+    timepoints.append(EmotionResult(emotion=switcher.get(ans_list[-1]), exact_time=start, duration=round(float(((len(ans_list)-1)*35+1)/30)-start)))
 
-    # print(ans_list)
-    # print(time)
-    print(timepoints)
     return timepoints
     
 

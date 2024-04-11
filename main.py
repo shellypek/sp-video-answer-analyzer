@@ -1,5 +1,6 @@
 from imports_files import *
-
+from interview_classes import VideoRequest, EmotionResult, Question, Result, InterviewResults, QuestionReq, Request
+from multimodal import prediction
 
 client = OpenAI(
     # This is the default and can be omitted
@@ -76,42 +77,6 @@ def ChatGPTEval(question, answer):
     return answer_score, score_explanation, question_type, emotion
 
 app = FastAPI()
-
-class VideoRequest(BaseModel):
-    questionNumber: int
-    videoFile: bytes
-
-class EmotionResult(BaseModel):
-    emotion: str
-    exact_time: float
-    duration: float
-
-class Question(BaseModel):
-    public_id: str
-    question: str
-    evaluation: str
-    score: int
-    video_link: str
-    question_type: str
-    emotion: str
-    emotion_results: list[EmotionResult]
-    answer: str
-
-class Result(BaseModel):
-    questions: list[Question]
-    score: int
-
-class InterviewResults(BaseModel):
-    result: Result
-    rawResult: bytes
-
-class QuestionReq(BaseModel):
-    question: str
-    public_id: str
-    video_link: str
-
-class Request(BaseModel):
-    questions: list[QuestionReq]
     
 
 @app.post("/process_interview")
@@ -135,7 +100,7 @@ async def process_interview(interview: Request):
 
         ans = answer
         answer_score, score_explanation, question_type, emotion = ChatGPTEval(question.question, answer)
-
+        emotion_results = prediction(question.video_link)
 
         question_obj = Question(
             question=question.question,
@@ -147,6 +112,7 @@ async def process_interview(interview: Request):
             emotion=emotion,
             answer=ans,
             public_id=question.public_id,
+            emotion_results = emotion_results
         )
         print("he",ans)
         result.questions.append(question_obj)
