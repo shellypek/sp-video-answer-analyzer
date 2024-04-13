@@ -2,6 +2,8 @@ from imports_files import *
 from interview_classes import VideoRequest, EmotionResult, Question, Result, InterviewResults, QuestionReq, Request
 from multimodal import prediction
 
+
+
 client = OpenAI(
     # This is the default and can be omitted
     api_key=os.environ.get('API_KEY'),
@@ -77,30 +79,39 @@ def ChatGPTEval(question, answer):
     return answer_score, score_explanation, question_type, emotion
 
 app = FastAPI()
-    
+
+def ensure_video_folder_exists():
+    """Creates the 'video' folder if it doesn't exist."""
+    video_folder_path = "video"
+    if not os.path.exists(video_folder_path):
+        os.makedirs(video_folder_path)
+
 
 @app.post("/process_interview")
 async def process_interview(interview: Request):
     print(interview)
+    
     interview_results = InterviewResults(result=Result(questions=[], score=0), rawResult=b"")
     result = Result(questions=[], score=0)
     
     for question in interview.questions:
         filename = f"interview_{question.public_id}.mp4"
-        
-        if download_video(question.video_link, filename):
+        video_path = os.path.join("video", filename)  # Combine folder and filename
+
+        ensure_video_folder_exists()
+
+        if download_video(question.video_link, video_path):
             try:
-                answer = Speech2Text(filename)
-                os.remove(filename)
+                answer = Speech2Text(video_path)
+                os.remove(video_path)
             except Exception as e:
                 answer = f"Error processing video: {e}"
         else:
             answer = "Error downloading video"
-        
 
         ans = answer
         answer_score, score_explanation, question_type, emotion = ChatGPTEval(question.question, answer)
-        emotion_results = prediction(question.video_link)
+        emotion_results = prediction(video_path)  # Use video_path instead of video_link
 
         question_obj = Question(
             question=question.question,
@@ -108,7 +119,6 @@ async def process_interview(interview: Request):
             video_link=question.video_link,
             question_type=question_type,
             evaluation=score_explanation,
-            emotion_results=[],
             emotion=emotion,
             answer=ans,
             public_id=question.public_id,

@@ -5,13 +5,11 @@ torch
 fastapi
 pydantic
 requests
-logging
 uvicorn
 regex
 Pillow 
-scikit-learn
-random
 numpy
-PIL
+scipy
+scikit-learn
 librosa
 facenet_pytorch

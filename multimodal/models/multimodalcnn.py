@@ -2,9 +2,7 @@
 """
 Parts of this code are based on https://github.com/zengqunzhao/EfficientFace/blob/master/models/EfficientFace.py
 """
-
-import torch
-import torch.nn as nn
+from imports_files import *
 from .modulator import Modulator
 from .efficientface import LocalFeatureExtractor, InvertedResidual
 from .transformer_timm import AttentionBlock, Attention

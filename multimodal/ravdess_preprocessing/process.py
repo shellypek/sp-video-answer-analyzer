@@ -10,7 +10,7 @@ import librosa
 import matplotlib.pyplot as plt
 import librosa.display
 from moviepy.editor import VideoFileClip
-from ravdess_preprocessing.create_annotations import create_annotations
+from .create_annotations import Create_annotations
 
 device = torch.device('cuda') if torch.cuda.is_available() else 'cpu'
 mtcnn = MTCNN(image_size=(720, 1280), device=device)
@@ -111,7 +111,7 @@ def extract_fa(root):
                     print('Error', root, filename)   
                     
                 split_audio(all_frames_to_select[cri], fps,root)
-    create_annotations(root)
+    Create_annotations(root)
                 
            
 
