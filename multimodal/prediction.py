@@ -1,4 +1,19 @@
-from imports_files import *
+import torch
+from torchvision import transforms
+import torch.utils.data as data
+from PIL import Image
+import functools
+import numpy as np
+import librosa
+from torch import nn
+from models.multimodalcnn import MultiModalCNN
+
+from opts import opts
+from ravdess_preprocessing.process import extract_fa
+
+# from utils import calculate_accuracy
+from transforms import Compose, ToTensor
+from torch.autograd import Variable
 
 def video_loader(video_dir_path):
     video = np.load(video_dir_path)    
@@ -93,7 +108,7 @@ def get_test_set(opt, spatial_transform=None, audio_transform=None):
         spatial_transform=spatial_transform, data_type='audiovisual',audio_transform=audio_transform)
     return test_data
 
-def prediction(root):
+def Prediction(root):
     # extract_fa(root)
 
     opt = opts

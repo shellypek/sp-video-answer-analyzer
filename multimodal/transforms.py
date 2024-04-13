@@ -2,7 +2,15 @@
 Parts of this code are based on https://github.com/okankop/Efficient-3DCNNs
 '''
 
-from imports_files import *
+import random
+import numbers
+import numpy as np
+import torch
+from PIL import Image
+try:
+    import accimage
+except ImportError:
+    accimage = None
 
 class Compose(object):
     """Composes several transforms together.

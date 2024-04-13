@@ -1,8 +1,6 @@
 from imports_files import *
 from interview_classes import VideoRequest, EmotionResult, Question, Result, InterviewResults, QuestionReq, Request
-from multimodal import prediction
-
-
+from multimodal import Prediction
 
 client = OpenAI(
     # This is the default and can be omitted
@@ -111,7 +109,7 @@ async def process_interview(interview: Request):
 
         ans = answer
         answer_score, score_explanation, question_type, emotion = ChatGPTEval(question.question, answer)
-        emotion_results = prediction(video_path)  # Use video_path instead of video_link
+        emotion_results = Prediction(video_path)  # Use video_path instead of video_link
 
         question_obj = Question(
             question=question.question,
