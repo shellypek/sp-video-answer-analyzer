@@ -26,7 +26,7 @@ class Opts:
         self.n_epochs = 10
         self.begin_epoch = 1
         self.resume_path = ''
-        self.pretrain_path = 'EfficientFace_Trained_on_AffectNet7.pth.tar'
+        self.pretrain_path = '/app/multimodal/EfficientFace_Trained_on_AffectNet7.pth.tar'
         self.no_train = False
         self.no_val = False
         self.test = True

@@ -1,6 +1,8 @@
 from imports_files import *
 from interview_classes import VideoRequest, EmotionResult, Question, Result, InterviewResults, QuestionReq, Request
-from multimodal import Prediction
+from multimodal import prediction
+
+
 
 client = OpenAI(
     # This is the default and can be omitted
@@ -78,11 +80,11 @@ def ChatGPTEval(question, answer):
 
 app = FastAPI()
 
-def ensure_video_folder_exists():
+def ensure_video_folder_exists(path):
     """Creates the 'video' folder if it doesn't exist."""
-    video_folder_path = "video"
-    if not os.path.exists(video_folder_path):
-        os.makedirs(video_folder_path)
+
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 
 @app.post("/process_interview")
@@ -93,23 +95,22 @@ async def process_interview(interview: Request):
     result = Result(questions=[], score=0)
     
     for question in interview.questions:
-        filename = f"interview_{question.public_id}.mp4"
-        video_path = os.path.join("video", filename)  # Combine folder and filename
+        filename = f"interview_{question.public_id}"
+        video_path = os.path.join("video" + filename, filename + "video.mp4")  # Combine folder and filename
 
-        ensure_video_folder_exists()
+        ensure_video_folder_exists("video" + filename)
 
         if download_video(question.video_link, video_path):
             try:
                 answer = Speech2Text(video_path)
-                os.remove(video_path)
             except Exception as e:
                 answer = f"Error processing video: {e}"
         else:
             answer = "Error downloading video"
-
+        print(answer)
         ans = answer
         answer_score, score_explanation, question_type, emotion = ChatGPTEval(question.question, answer)
-        emotion_results = Prediction(video_path)  # Use video_path instead of video_link
+        emotion_results = prediction.PredictionVideo("video" + filename)  # Use video_path instead of video_link
 
         question_obj = Question(
             question=question.question,

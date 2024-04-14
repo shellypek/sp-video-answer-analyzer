@@ -10,7 +10,8 @@ import librosa
 import matplotlib.pyplot as plt
 import librosa.display
 from moviepy.editor import VideoFileClip
-from .create_annotations import Create_annotations
+from ravdess_preprocessing.create_annotations import create_annotations
+from google.colab.patches import cv2_imshow
 
 device = torch.device('cuda') if torch.cuda.is_available() else 'cpu'
 mtcnn = MTCNN(image_size=(720, 1280), device=device)
@@ -96,12 +97,16 @@ def extract_fa(root):
                     im_rgb = im_rgb.to(device)
 
                     bbox = mtcnn.detect(im_rgb)
+                    # print(bbox)
                     if bbox[0] is not None:
                         bbox = bbox[0][0]
                         bbox = [round(x) for x in bbox]
                         x1, y1, x2, y2 = bbox
                         im = im[y1:y2, x1:x2, :]
-                        im = cv2.resize(im, (224,224))
+                        if not im:
+                           im=np.zeros((224,224,3), dtype=np.uint8)
+                        else:
+                            im = cv2.resize(im, (224,224))
                         numpy_video.append(im)
                 if len(frames_to_select) > 0:
                     for i in range(len(frames_to_select)):
@@ -111,7 +116,7 @@ def extract_fa(root):
                     print('Error', root, filename)   
                     
                 split_audio(all_frames_to_select[cri], fps,root)
-    Create_annotations(root)
+    create_annotations(root)
                 
            
 

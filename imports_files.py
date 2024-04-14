@@ -31,14 +31,14 @@ from multimodal.models.multimodalcnn import MultiModalCNN
 from interview_classes import EmotionResult
 from multimodal.opts import opts
 from multimodal.ravdess_preprocessing.process import extract_fa
-from utils import calculate_accuracy
+# from utils import calculate_accuracy
 from multimodal.transforms import Compose, ToTensor
-from torch.autograd import Variable        
-import cv2
-import soundfile as sf
-from facenet_pytorch import MTCNN
-import matplotlib.pyplot as plt
-import librosa.display
-from moviepy.editor import VideoFileClip
-from ravdess_preprocessing.create_annotations import create_annotations
-import torch.nn.functional as F
+# from torch.autograd import Variable        
+# import cv2
+# import soundfile as sf
+# from facenet_pytorch import MTCNN
+# import matplotlib.pyplot as plt
+# import librosa.display
+# from moviepy.editor import VideoFileClip
+# from ravdess_preprocessing.create_annotations import create_annotations
+# import torch.nn.functional as F

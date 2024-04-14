@@ -1,12 +1,7 @@
 '''
 This code is based on https://github.com/okankop/Efficient-3DCNNs
 '''
-import csv
-import torch
-import shutil
-import numpy as np
-import sklearn
-
+from imports_files import *
 
 
 class AverageMeter(object):

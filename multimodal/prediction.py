@@ -1,20 +1,5 @@
-import torch
-from torchvision import transforms
-import torch.utils.data as data
-from PIL import Image
-import functools
-import numpy as np
-import librosa
-from torch import nn
-from models.multimodalcnn import MultiModalCNN
-
-from opts import opts
-from ravdess_preprocessing.process import extract_fa
-
-# from utils import calculate_accuracy
-from transforms import Compose, ToTensor
-from torch.autograd import Variable
-
+from imports_files import *
+import time
 def video_loader(video_dir_path):
     video = np.load(video_dir_path)    
     video_data = []
@@ -108,8 +93,9 @@ def get_test_set(opt, spatial_transform=None, audio_transform=None):
         spatial_transform=spatial_transform, data_type='audiovisual',audio_transform=audio_transform)
     return test_data
 
-def Prediction(root):
-    # extract_fa(root)
+def PredictionVideo(root):
+    if extract_fa(root) == False:
+        return
 
     opt = opts
 
@@ -122,7 +108,7 @@ def Prediction(root):
     model = model.to(opt.device)
     model = nn.DataParallel(model, device_ids=None)
     #model.load_state_dict(torch.load('d:/RAVDESS/RAVDESS_multimodalcnn_15_best0.pth'))
-    best_state = torch.load('RAVDESS_multimodalcnn_15_best0.pth', map_location=torch.device(opt.device))
+    best_state = torch.load('/app/multimodal/RAVDESS_multimodalcnn_15_best0.pth', map_location=torch.device(opt.device))
     model.load_state_dict(best_state['state_dict'])
     model.eval()
 
@@ -183,13 +169,17 @@ def Prediction(root):
     # print(timepoints)
     # return timepoints
     timepoints = []
-    start = 0
-    for i in range(len(ans_list)):
-        if i != 0 and ans_list[i-1] != ans_list[i]:
-            timepoints.append(EmotionResult(emotion=switcher.get(ans_list[i-1]), exact_time=start, duration=round(float((i*35+1)/30)-start)))
-            start = round(float((i*35+1)/30))
-
-    timepoints.append(EmotionResult(emotion=switcher.get(ans_list[-1]), exact_time=start, duration=round(float(((len(ans_list)-1)*35+1)/30)-start)))
+    if len(ans_list) != 0:
+        start = 0
+        i = 0
+        for i in range(len(ans_list)):
+            if i != 0 and ans_list[i-1] != ans_list[i]:
+                timepoints.append(EmotionResult(emotion=switcher.get(ans_list[i-1]), exact_time=start, duration=round(float((i*35+1)/30)-start)))
+                start = round(float((i*35+1)/30))
+        print(ans_list)
+        print(i)
+        timepoints.append(EmotionResult(emotion=switcher.get(ans_list[i]), exact_time=start, duration=round(float(((len(ans_list)-1)*35+1)/30)-start)))
+    
 
     return timepoints
     
