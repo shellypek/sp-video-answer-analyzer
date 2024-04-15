@@ -59,7 +59,7 @@ def ChatGPTEval(question, answer):
 
     chat_completion = client.chat.completions.create(
         messages=message,
-        model="gpt-3.5-turbo",
+        model="gpt-4",
     )
 
     content = chat_completion.choices[0].message.content
