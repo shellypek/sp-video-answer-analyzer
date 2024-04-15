@@ -96,7 +96,12 @@ def get_test_set(opt, spatial_transform=None, audio_transform=None):
 def PredictionVideo(root):
     if extract_fa(root) == False:
         return
-
+    fps = 30    
+    for filename in os.listdir(root):
+        if filename.endswith('.mp4'):
+            cap = cv2.VideoCapture(os.path.join(root,filename))  
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            
     opt = opts
 
     video_transform = Compose([
@@ -174,11 +179,11 @@ def PredictionVideo(root):
         i = 0
         for i in range(len(ans_list)):
             if i != 0 and ans_list[i-1] != ans_list[i]:
-                timepoints.append(EmotionResult(emotion=switcher.get(ans_list[i-1]), exact_time=start, duration=round(float((i*35+1)/30)-start)))
-                start = round(float((i*35+1)/30))
+                timepoints.append(EmotionResult(emotion=switcher.get(ans_list[i-1]), exact_time=start, duration=round(float((i*35+1)/fps)-start, 1)))
+                start = round(float((i*35+1)/fps), 1)
         print(ans_list)
         print(i)
-        timepoints.append(EmotionResult(emotion=switcher.get(ans_list[i]), exact_time=start, duration=round(float(((len(ans_list)-1)*35+1)/30)-start)))
+        timepoints.append(EmotionResult(emotion=switcher.get(ans_list[i]), exact_time=start, duration=round(float(((len(ans_list))*35+1)/fps)-start, 1)))
     
 
     return timepoints
