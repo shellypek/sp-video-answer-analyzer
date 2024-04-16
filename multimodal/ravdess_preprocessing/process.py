@@ -242,6 +242,7 @@ def extract_fa(root):
                     
                 split_audio(all_frames_to_select[cri], fps,root)
     Create_annotations(root)
+    return fps
                 
            
 
