@@ -93,15 +93,9 @@ def get_test_set(opt, spatial_transform=None, audio_transform=None):
         spatial_transform=spatial_transform, data_type='audiovisual',audio_transform=audio_transform)
     return test_data
 
-def PredictionVideo(root):
-    if extract_fa(root) == False:
-        return
-    fps = 30    
-    for filename in os.listdir(root):
-        if filename.endswith('.mp4'):
-            cap = cv2.VideoCapture(os.path.join(root,filename))  
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            
+def PredictionVideo(root): 
+    fps = extract_fa(root)
+    
     opt = opts
 
     video_transform = Compose([
