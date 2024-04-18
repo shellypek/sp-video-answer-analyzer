@@ -116,8 +116,10 @@ async def process_interview(interview: Request):
                 answer = Speech2Text(video_path)
             except Exception as e:
                 answer = f"Error processing video: {e}"
+                os.remove(video_path)
         else:
             answer = "Error downloading video"
+            os.remove(video_path)
         print(answer)
         ans = answer
         answer_score, score_explanation, question_type, emotion = ChatGPTEval(question.question, answer)
@@ -138,7 +140,9 @@ async def process_interview(interview: Request):
         result.questions.append(question_obj)
         result.score += int(answer_score)
         print(question_obj)
+        os.remove(video_path)
     interview_results.result = result
     print(interview_results)
     return {"result": interview_results.result}
+
 
