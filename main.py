@@ -45,14 +45,25 @@ def ChatGPTEval(question, answer):
     message = [
         {
             "role": "user",
-            "content": f"""Rate the candidate's answer as an integer from 0 to 100, where 0 is the worst and 100 is the best and give a little bit explanation. Also, provide type of the question: technical, behavioral, or motivation. 
-            could you please give emotions class for the answer from the following emotion classes: neutral, calm, happy, sad, angry, fearful, disgust, surprised.
-            Here's the question: "{question}" and here's the answer: "{answer}".
-            Please give your answer in the following format:
-            Answer score:
+            "content": f"""Here's the question: "{question}" and here's the answer: "{answer}". Please provide your assessment based on the following criteria:
+            Answer score: 
+            - Rate the candidate's answer as an integer from 0 to 100, where 0 is the worst and 100 is the best.
+
             Score explanation:
+            - Choose the score category based on the given score: 
+            91-100: Excellent (The answer is exceptional, showing deep understanding and creativity.) 
+            71-90: Good (The answer demonstrates solid knowledge and good application, though minor gaps may be present.)
+            51-70: Satisfactory (The answer covers basic concepts correctly but lacks depth or detail.) 
+            31-50: Poor (The answer shows some understanding but is largely incorrect or irrelevant.) 
+            0-30: Very Poor (The answer is mostly incorrect, irrelevant, or not provided.)
+            
             Question type:
+            - Specify if the question is Technical, Behavioral, or Motivational. 
+            
             Emotion:
+            - Classify the candidate's emotional tone during the answer from the following emotions: 
+            Neutral, Calm, Happy, Sad, Angry, Fearful, Disgust, Surprised
+
             """
         }
     ]
